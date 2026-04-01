@@ -1,0 +1,19 @@
+Set these environment variables in Vercel project settings.
+
+Required
+- HUBPUSH_CLOUD_API_KEY: strong random secret used by X-API-Key header
+
+Optional
+- HUBPUSH_PROJECT: defaults to hubpush
+
+After redeploy, test:
+- GET /api/v1/health
+- GET /api/v1/snapshot (with X-API-Key)
+- POST /api/v1/snapshot (with X-API-Key, JSON body: {"rows": []})
+- GET /api/v1/commits (with X-API-Key)
+- POST /api/v1/commits (with X-API-Key, JSON body)
+
+Important note
+- Current backend stores data in /tmp on the Vercel runtime and is ephemeral.
+- This is enough for initial integration tests.
+- For durable production storage, replace _store.js with Vercel KV-backed read/write.

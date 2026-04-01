@@ -1,0 +1,15 @@
+{
+  "functions": {
+    "api/v1/*.js": {
+      "maxDuration": 30,
+      "memory": 512
+    }
+  },
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/api/v1/health",
+      "permanent": false
+    }
+  ]
+}
