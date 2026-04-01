@@ -1,0 +1,33 @@
+# Python virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local environment/config secrets
+cloud.env
+*.env.local
+
+# Local generated data and runtime state
+data/cloud_emulator/
+data/*.json
+data/*.jsonl
+1.FBEO/
+1.FBEO.zip
+assets/
+*.xlsx
+*.bak
+hs_discovery_output.txt
+.claude/
+
+# Temporary/editor files
+~$*.xlsx
+*.tmp
+
+# Build artifacts
+dist/
+build/
+*.spec
