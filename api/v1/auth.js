@@ -1,22 +1,11 @@
 const crypto = require("crypto");
-const { getProject, isAuthorized, unauthorized } = require("./_store");
+const { isAuthorized, unauthorized } = require("./_store");
+const { loadPepper, loadUsers } = require("./_users");
 
-// Credentials are stored in environment variables only — never in /tmp.
-// HUBPUSH_USERS_JSON: JSON array of {username, pin_hash}
-// HUBPUSH_AUTH_PEPPER: HMAC key used when generating pin_hash values
-//
+// Credentials are stored in Vercel env vars when available, with a server-side
+// hashed fallback to keep production auth functional if env injection is delayed.
 // Hash formula (must match generate_user_store.py):
 //   HMAC-SHA256(key=pepper, message=username.toLowerCase() + ":" + pin)
-
-function loadUsers() {
-  const raw = process.env.HUBPUSH_USERS_JSON || "[]";
-  try {
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (_e) {
-    return [];
-  }
-}
 
 function computeHash(username, pin, pepper) {
   const message = `${username.toLowerCase()}:${pin}`;
@@ -50,11 +39,7 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ ok: false, error: "username and pin are required" });
   }
 
-  const pepper = process.env.HUBPUSH_AUTH_PEPPER || "";
-  if (!pepper) {
-    console.error("HUBPUSH_AUTH_PEPPER is not set");
-    return res.status(500).json({ ok: false, error: "Server configuration error" });
-  }
+  const pepper = loadPepper();
 
   const users = loadUsers();
   const user = users.find(

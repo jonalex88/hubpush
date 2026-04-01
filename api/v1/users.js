@@ -1,16 +1,5 @@
-const { getProject, isAuthorized, unauthorized } = require("./_store");
-
-// Users are read from HUBPUSH_USERS_JSON env var (array of {username, pin_hash})
-// This endpoint returns only usernames — never hashes or PINs.
-function loadUsers() {
-  const raw = process.env.HUBPUSH_USERS_JSON || "[]";
-  try {
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (_e) {
-    return [];
-  }
-}
+const { isAuthorized, unauthorized } = require("./_store");
+const { loadUsers } = require("./_users");
 
 module.exports = async function handler(req, res) {
   if (!isAuthorized(req)) {
