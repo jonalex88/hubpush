@@ -10,6 +10,7 @@ __pycache__/
 # Local environment/config secrets
 cloud.env
 *.env.local
+local_users.json
 
 # Local generated data and runtime state
 data/cloud_emulator/

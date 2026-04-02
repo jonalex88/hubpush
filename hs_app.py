@@ -2,21 +2,10 @@
 TJ HubPush — Windows desktop application
 Transaction Junction HubSpot Push Tool
 """
-import os
+from pathlib import Path
 import tkinter as tk
-from tkinter import messagebox
 
-from hubpush_core.auth_client import AuthClient, AuthConfig
-
-# Load cloud config from environment (or cloud.env file if present)
-_env_file = os.path.join(os.path.dirname(__file__), "cloud.env")
-if os.path.exists(_env_file):
-    with open(_env_file) as _f:
-        for _line in _f:
-            _line = _line.strip()
-            if _line and not _line.startswith("#") and "=" in _line:
-                _k, _v = _line.split("=", 1)
-                os.environ.setdefault(_k.strip(), _v.strip())
+from hubpush_core.local_auth import LocalAuthStore
 
 # ── Colours ───────────────────────────────────────────────────────────────────
 NAVY        = "#0f2744"
@@ -35,6 +24,7 @@ C_ORANGE    = "#f5a623"
 C_CYAN      = "#00b4d8"
 
 FONT        = "Segoe UI"
+LOCAL_USERS_FILE = Path(__file__).with_name("local_users.json")
 
 
 # ── Login Window ─────────────────────────────────────────────────────────────
@@ -57,8 +47,7 @@ class LoginWindow(tk.Tk):
         self.configure(bg=WHITE)
         self.eval("tk::PlaceWindow . center")
 
-        # Fetch usernames (shows fallback list if server unreachable)
-        self._auth = AuthClient(AuthConfig.from_env())
+        self._auth = LocalAuthStore(LOCAL_USERS_FILE)
         self._users = self._auth.get_users()
 
         self._build_ui()
@@ -197,7 +186,7 @@ class LoginWindow(tk.Tk):
             self._pin_var.set(digits[:4])
 
     def _attempt_login(self):
-        """Validate selection and PIN, then call cloud auth."""
+        """Validate selection and PIN against the local user file."""
         if not self._selected_user:
             self._error_var.set("Please select your name first.")
             return
@@ -211,14 +200,14 @@ class LoginWindow(tk.Tk):
         self._login_btn.config(state=tk.DISABLED, text="Checking…")
         self.update_idletasks()
 
-        ok, err = self._auth.login(self._selected_user, pin)
+        result = self._auth.login(self._selected_user, pin)
 
-        if ok:
+        if result.ok:
             username = self._selected_user
             self.destroy()
             self._on_success(username)
         else:
-            self._error_var.set(err or "Invalid PIN. Please try again.")
+            self._error_var.set(result.error or "Invalid PIN. Please try again.")
             self._pin_var.set("")
             self._pin_entry.focus_set()
             self._login_btn.config(state=tk.NORMAL, text="Sign In  →")
